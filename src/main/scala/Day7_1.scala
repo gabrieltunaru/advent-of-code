@@ -6,8 +6,13 @@ import scala.util.{Failure, Success, Try}
 
 sealed trait Tree
 
-case class Branch(name: String, parents: List[String]= Nil) extends Tree
-case class Leaf(name: String, size: Int, parents: List[String]= Nil) extends Tree
+case class Branch(name: String, parents: List[String] = Nil) extends Tree
+case class Leaf(name: String, size: Int, parents: List[String] = Nil) extends Tree
+
+enum FileType:
+  case File, Dir
+
+case class FileInfo(fileType: FileType, size: Int)
 
 object Day7_1 {
   val resources = "src/main/resources"
@@ -25,20 +30,20 @@ object Day7_1 {
 
     line
       .map {
-        case cd("/") => firstPass(lines.tail, treeList, mutable.Stack.from(List("/")))
+        case cd("/")  => firstPass(lines.tail, treeList, mutable.Stack.from(List("/")))
         case cd("..") => firstPass(lines.tail, treeList, pwd.tail)
-        case cd(d)   => firstPass(lines.tail, treeList, pwd.push(d))
-        case ls()    => firstPass(lines.tail, treeList, pwd)
-        case dir(d)  => firstPass(lines.tail, treeList.appended(Branch(d, pwd.toList)), pwd)
+        case cd(d)    => firstPass(lines.tail, treeList, pwd.push(d))
+        case ls()     => firstPass(lines.tail, treeList, pwd)
+        case dir(d)   => firstPass(lines.tail, treeList.appended(Branch(d, pwd.toList)), pwd)
         case file(size, name) =>
           firstPass(lines.tail, treeList.appended(Leaf(name, size.toInt, pwd.toList)), pwd)
       }
       .getOrElse(treeList)
 
-  def updateParents(size: Int, parents :List[String], initial: Map[String, Int]): Map[String,Int] =
+  def updateParents(size: Int, parents: List[String], initial: Map[String, FileInfo]): Map[String, FileInfo] =
     parents.foldLeft(initial)((acc, el) =>
-      val oldSize = acc.getOrElse(el, 0)
-      acc.updated(el, oldSize + size)
+      val oldSize = acc.getOrElse(el, FileInfo(FileType.Dir, 0)).size
+      acc.updated(el, FileInfo(FileType.Dir, oldSize + size))
     )
 
   def main(args: Array[String]): Unit =
@@ -46,13 +51,13 @@ object Day7_1 {
     val root: Tree = Branch("/", Nil)
     val currentDir = mutable.Stack.from(List("/"))
     val treeList = firstPass(fileContents.toList, List(root), currentDir)
-    val sizeMap = treeList.foldLeft(Map.empty[String, Int])((acc, el) =>
+    val sizeMap = treeList.foldLeft(Map.empty[String, FileInfo])((acc, el) =>
       el match
-        case Branch(name, _) => acc.updated(name,0)
-        case Leaf(name, size, parents) => updateParents(size, parents, acc.updated(name,size))
+        case Branch(name, _)           => acc.updated(name, FileInfo(FileType.Dir, 0))
+        case Leaf(name, size, parents) => updateParents(size, parents, acc.updated(name, FileInfo(FileType.File, size)))
     )
-    val lessThan100k = sizeMap.filter((_, size) => size < 100000)
-    val sumOfSmallOnes = lessThan100k.foldLeft(0)((acc, el) => acc + el._2)
-    println(lessThan100k)
-    println(sumOfSmallOnes)
+    val dirsLessThan100k = sizeMap.filter((_, fileInfo) => fileInfo.size <= 100000 && fileInfo.fileType == FileType.Dir)
+    val sumOfSmallDirs = dirsLessThan100k.foldLeft(0)((acc, el) => acc + el._2.size)
+    println(dirsLessThan100k)
+    println(sumOfSmallDirs)
 }
