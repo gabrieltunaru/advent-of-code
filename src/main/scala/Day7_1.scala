@@ -1,8 +1,4 @@
-import scala.collection.immutable.Set
-import scala.collection.mutable
-import scala.collection.mutable.Stack
 import scala.io.Source
-import scala.util.{Failure, Success, Try}
 
 sealed trait Tree
 
@@ -19,10 +15,10 @@ object Day7_1 {
   val index = 7
   val filePath = s"$resources/day_$index.txt"
 
-  def createPathString(pwd: mutable.Stack[String], name: String) =
-    pwd.reverse.toList.appended(name).mkString("/","/","")
+  def createPathString(pwd: List[String], name: String) =
+    pwd.reverse.appended(name).mkString("/","/","")
 
-  def firstPass(lines: List[String], treeList: List[Tree], pwd: mutable.Stack[String]): List[Tree] =
+  def firstPass(lines: List[String], treeList: List[Tree], pwd: List[String]): List[Tree] =
 
     val cd = "\\$ cd (.*)".r
     val ls = "\\$ ls".r
@@ -33,13 +29,13 @@ object Day7_1 {
 
     line
       .map {
-        case cd("/")  => firstPass(lines.tail, treeList, mutable.Stack.from(List.empty[String]))
+        case cd("/")  => firstPass(lines.tail, treeList, List.empty[String])
         case cd("..") => firstPass(lines.tail, treeList, pwd.tail)
-        case cd(d)    => firstPass(lines.tail, treeList, pwd.push(d))
+        case cd(d)    => firstPass(lines.tail, treeList, d::pwd)
         case ls()     => firstPass(lines.tail, treeList, pwd)
-        case dir(name)   => firstPass(lines.tail, treeList.appended(Branch(createPathString(pwd, name), pwd.toList)), pwd)
+        case dir(name)   => firstPass(lines.tail, treeList.appended(Branch(createPathString(pwd, name), pwd)), pwd)
         case file(size, name) =>
-          firstPass(lines.tail, treeList.appended(Leaf(createPathString(pwd, name), size.toInt, pwd.toList)), pwd)
+          firstPass(lines.tail, treeList.appended(Leaf(createPathString(pwd, name), size.toInt, pwd)), pwd)
       }
       .getOrElse(treeList)
 
@@ -47,7 +43,7 @@ object Day7_1 {
     parents.foldLeft(initial)((acc, el) =>
       val index = parents.indexOf(el)
       val slice = parents.slice(index+1, parents.size)
-      val path = createPathString(mutable.Stack.from(slice), el)
+      val path = createPathString(slice, el)
       val oldSize = acc.getOrElse(path, FileInfo(FileType.Dir, 0)).size
       acc.updated(path, FileInfo(FileType.Dir, oldSize + size))
     )
@@ -55,7 +51,7 @@ object Day7_1 {
   def main(args: Array[String]): Unit =
     val fileContents = Source.fromFile(filePath).getLines()
     val root: Tree = Branch("/", Nil)
-    val currentDir = mutable.Stack.from(List.empty[String])
+    val currentDir = List.empty[String]
     val treeList = firstPass(fileContents.toList, List(root), currentDir)
     val sizeMap = treeList.foldLeft(Map.empty[String, FileInfo])((acc, el) =>
       el match
