@@ -16,9 +16,10 @@ object Day7_1 {
   val filePath = s"$resources/day_$index.txt"
 
   def createPathString(pwd: List[String], name: String) =
-    pwd.reverse.appended(name).mkString("/","/","")
+    pwd.reverse.appended(name).mkString("/", "/", "")
 
   def firstPass(lines: List[String], treeList: List[Tree], pwd: List[String]): List[Tree] =
+
 
     val cd = "\\$ cd (.*)".r
     val ls = "\\$ ls".r
@@ -29,11 +30,11 @@ object Day7_1 {
 
     line
       .map {
-        case cd("/")  => firstPass(lines.tail, treeList, List.empty[String])
-        case cd("..") => firstPass(lines.tail, treeList, pwd.tail)
-        case cd(d)    => firstPass(lines.tail, treeList, d::pwd)
-        case ls()     => firstPass(lines.tail, treeList, pwd)
-        case dir(name)   => firstPass(lines.tail, treeList.appended(Branch(createPathString(pwd, name), pwd)), pwd)
+        case cd("/")   => firstPass(lines.tail, treeList, List.empty[String])
+        case cd("..")  => firstPass(lines.tail, treeList, pwd.tail)
+        case cd(d)     => firstPass(lines.tail, treeList, d :: pwd)
+        case ls()      => firstPass(lines.tail, treeList, pwd)
+        case dir(name) => firstPass(lines.tail, treeList.appended(Branch(createPathString(pwd, name), pwd)), pwd)
         case file(size, name) =>
           firstPass(lines.tail, treeList.appended(Leaf(createPathString(pwd, name), size.toInt, pwd)), pwd)
       }
@@ -41,12 +42,12 @@ object Day7_1 {
 
   def updateParents(size: Int, parents: List[String], initial: Map[String, FileInfo]): Map[String, FileInfo] =
     parents.foldLeft(initial)((acc, el) =>
-      val index = parents.indexOf(el)
-      val slice = parents.slice(index+1, parents.size)
-      val path = createPathString(slice, el)
+      val path = createPathString(parents.tail, el)
       val oldSize = acc.getOrElse(path, FileInfo(FileType.Dir, 0)).size
       acc.updated(path, FileInfo(FileType.Dir, oldSize + size))
     )
+
+  // poate daca faci ls de 2 ori in acelasi dir, le aduna de 2 ori
 
   def main(args: Array[String]): Unit =
     val fileContents = Source.fromFile(filePath).getLines()
@@ -55,14 +56,16 @@ object Day7_1 {
     val treeList = firstPass(fileContents.toList, List(root), currentDir)
     val sizeMap = treeList.foldLeft(Map.empty[String, FileInfo])((acc, el) =>
       el match
-        case Branch(name, _)           => acc.updated(name, FileInfo(FileType.Dir, 0))
+        case Branch(_, _)     => acc
         case Leaf(name, size, parents) => updateParents(size, parents, acc.updated(name, FileInfo(FileType.File, size)))
     )
-    val dirsLessThan100k = sizeMap.filter((_, fileInfo) => fileInfo.size < 100000 && fileInfo.fileType == FileType.Dir)
+    val dirsLessThan100k = sizeMap.filter((_, fileInfo) => fileInfo.size <= 100000 && fileInfo.fileType == FileType.Dir)
     val sumOfSmallDirs = dirsLessThan100k.foldLeft(0)((acc, el) => acc + el._2.size)
 //    println(dirsLessThan100k)
     println(sumOfSmallDirs)
     sizeMap.toList.filter(_._2.fileType == FileType.Dir).sorted((a, b) => a._1.compareTo(b._1)).foreach(println)
+    println("*".repeat(70))
     sizeMap.toList.filter(_._2.fileType == FileType.File).sorted((a, b) => a._1.compareTo(b._1)).foreach(println)
+    println(sumOfSmallDirs)
 
 }
