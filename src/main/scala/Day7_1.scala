@@ -29,7 +29,7 @@ object Day7_1:
 
     line
       .map {
-        case cd("/")   => firstPass(lines.tail, treeList, List.empty[String])
+        case cd("/")   => firstPass(lines.tail, treeList, List("/"))
         case cd("..")  => firstPass(lines.tail, treeList, pwd.tail)
         case cd(d)     => firstPass(lines.tail, treeList, d :: pwd)
         case ls()      => firstPass(lines.tail, treeList, pwd)
@@ -41,7 +41,8 @@ object Day7_1:
 
   def updateParents(size: Int, parents: List[String], initial: Map[String, FileInfo]): Map[String, FileInfo] =
 
-    val parentsPaths = parents.reverse.scanLeft(List[String]())((acc, elem) => elem :: acc)
+    val parentsPaths = parents.reverse
+      .scanLeft(List[String]())((acc, elem) => elem :: acc)
       .map(_.reverse)
       .filterNot(_.isEmpty)
       .map(_.mkString("/", "/", ""))
@@ -53,7 +54,7 @@ object Day7_1:
   def main(args: Array[String]): Unit =
     val fileContents = Source.fromFile(filePath).getLines()
     val root: Tree = Branch("/", Nil)
-    val currentDir = List.empty[String]
+    val currentDir = List("/")
     val treeList = firstPass(fileContents.toList, List(root), currentDir)
     val sizeMap = treeList.foldLeft(Map.empty[String, FileInfo])((acc, el) =>
       el match
@@ -65,9 +66,28 @@ object Day7_1:
       sizeMap.filter((_, fileInfo) => fileInfo.size <= 100000 && fileInfo.fileType == FileType.Dir)
     val sumOfSmallDirs = dirsLessThan100k.foldLeft(0)((acc, el) => acc + el._2.size)
     //    println(dirsLessThan100k)
-    println(sumOfSmallDirs)
-    sizeMap.toList.filter(_._2.fileType == FileType.Dir).sorted((a, b) => a._1.compareTo(b._1)).foreach(println)
-    println("*".repeat(70))
-    sizeMap.toList.filter(_._2.fileType == FileType.File).sorted((a, b) => a._1.compareTo(b._1)).foreach(println)
-    println(sumOfSmallDirs)
-    println(sizeMap.foldLeft(0)((acc, el) => acc + el._2.size))
+//    println(sumOfSmallDirs)
+//    sizeMap.toList.filter(_._2.fileType == FileType.Dir).sorted((a, b) => a._1.compareTo(b._1)).foreach(println)
+//    println("*".repeat(70))
+//    sizeMap.toList.filter(_._2.fileType == FileType.File).sorted((a, b) => a._1.compareTo(b._1)).foreach(println)
+//    println(sumOfSmallDirs)
+//    println(sizeMap.foldLeft(0)((acc, el) => acc + el._2.size))
+
+    // part 2
+
+    val rootSize = sizeMap.get("//").map(_.size).getOrElse(0)
+    val usedSpace = 70000000 - rootSize
+    val sizeToDelete = 30000000 - usedSpace
+    val sortedDirs = sizeMap.toList
+      .filter(_._2.fileType == FileType.Dir)
+      .sorted((a, b) => a._2.size.compareTo(b._2.size))
+
+    println(rootSize)
+    println(sizeToDelete)
+    sortedDirs.foreach(println)
+
+    val smallestNeededToDelete = sortedDirs.find { case (s, i) =>
+      i.size >= sizeToDelete
+    }
+
+    println(smallestNeededToDelete)
