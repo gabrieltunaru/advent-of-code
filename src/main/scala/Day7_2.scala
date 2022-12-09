@@ -1,7 +1,9 @@
 import scala.io.Source
 
 import day7.*
-object Day7_1:
+
+
+object Day7_2:
   val resources = "src/main/resources"
   val index = 7
   val filePath = s"$resources/day_$index.txt"
@@ -47,14 +49,28 @@ object Day7_1:
     val root: Tree = Branch("/", Nil)
     val currentDir = List("/")
     val treeList = parse(fileContents.toList, List(root), currentDir)
+
     val sizeMap = treeList.foldLeft(Map.empty[String, FileInfo])((acc, el) =>
       el match
         case Branch(_, _) => acc
         case Leaf(name, size, parents) =>
           updateParents(size, parents, acc.updated(name, FileInfo(FileType.File, size)))
     )
-    val dirsLessThan100k =
-      sizeMap.filter((_, fileInfo) => fileInfo.size <= 100000 && fileInfo.fileType == FileType.Dir)
-    val sumOfSmallDirs = dirsLessThan100k.foldLeft(0)((acc, el) => acc + el._2.size)
-    println(sumOfSmallDirs)
 
+
+    val rootSize = sizeMap.get("//").map(_.size).getOrElse(0)
+    val usedSpace = 70000000 - rootSize
+    val sizeToDelete = 30000000 - usedSpace
+    val sortedDirs = sizeMap.toList
+      .filter(_._2.fileType == FileType.Dir)
+      .sorted((a, b) => a._2.size.compareTo(b._2.size))
+
+    println(rootSize)
+    println(sizeToDelete)
+    sortedDirs.foreach(println)
+
+    val smallestNeededToDelete = sortedDirs.find { case (s, i) =>
+      i.size >= sizeToDelete
+    }
+
+    println(smallestNeededToDelete)
