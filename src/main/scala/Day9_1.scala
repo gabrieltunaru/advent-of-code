@@ -1,16 +1,12 @@
 import scala.io.Source
 
-case class Point(x: Int, y: Int)
-case class Rope(head: Point, tail: Point)
-
+import day9.*
 object Day9_1:
   val resources = "src/main/resources"
   val index = 9
   val filePath = s"$resources/day_$index.txt"
 
   def printRope(rope: Rope) =
-//    val xmax = rope.head.x.max(rope.tail.x)+1
-//    val ymax = rope.head.y.max(rope.tail.y)+1
     val xmax = 6
     val ymax = 5
     val matrix = Array.ofDim[String](xmax, ymax).map(_.map(_ => "-"))
