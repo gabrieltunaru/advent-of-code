@@ -4,7 +4,7 @@ import scala.io.Source
 
 case class State(cycle: Int, during: Int, after: Int, lastLine: Option[String])
 
-object Day10_1:
+object Day10:
   val resources = "src/main/resources"
   val index = 10
   val filePath = s"$resources/day_$index.txt"
@@ -44,6 +44,18 @@ object Day10_1:
     if (cycles >= 20 && cycles < 40) List(20)
     else (0 until length).map(_ * 40).map(_ + 20)
 
+  def isRegisterHere(state: State): String =
+    if (((state.cycle-1) % 40 - state.during).abs < 2) "#" else "."
+
+  def drawPixels(states: List[State]): List[String] =
+    def initial: List[String] = ".".repeat(states.length+1).toList.map(_.toString)
+    states.foldLeft(initial)((acc, state) =>
+      val currentChar = isRegisterHere(state)
+      if (state.cycle==10)
+        println(state)
+      acc.updated(state.cycle, currentChar)
+    )
+
   def main(args: Array[String]): Unit =
     val fileContents = Source.fromFile(filePath).getLines().toList
     val initialStates = List(State(0, 1,1, None))
@@ -53,5 +65,7 @@ object Day10_1:
     val res = neededSignals.map(getSignalStrength)
     println(res)
     println(res.sum)
-    val test = signals.filter(_.cycle >= 179)
-    test.foreach(println)
+    val states = signals.reverse.tail
+
+    val drawing = drawPixels(states).tail.grouped(40)
+      drawing.foreach(l => println(l.mkString))
