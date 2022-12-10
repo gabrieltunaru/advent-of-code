@@ -2,7 +2,7 @@ package com.cannondev.advent
 
 import scala.io.Source
 
-case class State(cycle: Int, value: Int, lastLine: Option[String])
+case class State(cycle: Int, during: Int, after: Int, lastLine: Option[String])
 
 object Day10_1:
   val resources = "src/main/resources"
@@ -16,21 +16,28 @@ object Day10_1:
 
     val line = lines.headOption
 
-    val state = states.head
+    val lastState = states.head
+
+    val state = if (lastState.during == lastState.after) lastState else lastState.copy(during = lastState.after)
 
     line.map {
-      case noop() => move(lines.tail, State(state.cycle + 1, state.value, line) :: states)
+      case noop() => move(lines.tail, State(state.cycle + 1, state.during, state.after, line) :: states)
       case addx(v) =>
         move(
           lines.tail,
-          State(state.cycle + 2, state.value + v.toInt, line) :: State(state.cycle + 1, state.value, line) :: states
+          State(state.cycle + 2, state.during, state.after + v.toInt, line) :: State(
+            state.cycle + 1,
+            state.during,
+            state.after,
+            line
+          ) :: states
         )
 
       case e => throw new Error(s"invalid input: $e")
     } getOrElse states
 
   def getSignalStrength(state: State) =
-    state.value * state.cycle
+    state.during * state.cycle
 
   def getSignalIntervals(cycles: Int): Seq[Int] =
     val length = cycles / 40
@@ -39,7 +46,7 @@ object Day10_1:
 
   def main(args: Array[String]): Unit =
     val fileContents = Source.fromFile(filePath).getLines().toList
-    val initialStates = List(State(0, 1, None))
+    val initialStates = List(State(0, 1,1, None))
     val signals = move(fileContents, initialStates)
     val signalIntervals = getSignalIntervals(signals.length)
     val neededSignals = signalIntervals.flatMap(cycle => signals.find(_.cycle == cycle))
