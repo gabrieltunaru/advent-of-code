@@ -32,10 +32,11 @@ object Day9_2:
     val xMove = minusOne(xDiff)
     val yMove = minusOne(yDiff)
 
-    if (head==Point(15,1))
+    if (head==Point(2,2) && tail==Point(1,0))
       println("test")
 
-    if (xDiff.abs == 2 && yDiff.abs == 1) Point(tail.x + xMove, tail.y + yDiff)
+    if (xDiff.abs == 2 && yDiff.abs == 2) Point(tail.x + xMove, tail.y + yMove)
+    else if (xDiff.abs == 2 && yDiff.abs == 1) Point(tail.x + xMove, tail.y + yDiff)
     else if (xDiff.abs == 1 && yDiff.abs == 2) Point(tail.x + xDiff, tail.y + yMove)
     else if (xDiff.abs > 1) Point(tail.x + xMove, tail.y)
     else if (yDiff.abs > 1) Point(tail.x, tail.y + yMove)
@@ -55,7 +56,7 @@ object Day9_2:
   def steps(rope: List[Point], x: Int, y: Int, amount: Int): List[List[Point]] =
     val res = (1 to amount).foldLeft(List(rope))((acc, _) => step(acc.head, x, y) :: acc)
     val head = res.head
-    res.reverse.foreach(l => advancedPrintRope(l))
+//    res.reverse.foreach(l => advancedPrintRope(l))
     res
 
   def move(line: String, initial: List[Point]): List[List[Point]] =
