@@ -8,32 +8,32 @@ object Day_11:
   case class Operation(left: String, op: String, right: String)
   case class MonkeyInput(
       number: Int,
-      items: List[Int],
+      items: List[BigInt],
       operation: Operation,
       test: Int,
       trueMonkey: Int,
       falseMonkey: Int,
       inspectedNo: Int = 0
   )
-  case class MonkeyMove(stressLevel: Int, sourceMonkey: Int, targetMonkey: Int)
+  case class MonkeyMove(stressLevel: BigInt, sourceMonkey: Int, targetMonkey: Int)
 
   val index = 11
 
-  def getOperator(old: Int, operator: String): Int =
+  def getOperator(old: BigInt, operator: String): BigInt =
     operator match
       case "old" => old
       case s     => s.toInt
 
-  def applyOperation(stressLevel: Int, operation: Operation): Int =
+  def applyOperation(stressLevel: BigInt, operation: Operation): BigInt =
     operation.op match
       case "*"     => getOperator(stressLevel, operation.left) * getOperator(stressLevel, operation.right)
       case "+"     => getOperator(stressLevel, operation.left) + getOperator(stressLevel, operation.right)
       case another => throw new Error(s"Invalid operator: $another in $operation")
 
-  def parseMonkeyItem(monkeyInput: MonkeyInput): List[MonkeyMove] =
+  def parseMonkeyItem(monkeyInput: MonkeyInput, reducer: Int): List[MonkeyMove] =
     monkeyInput.items.map(stressLevel =>
       val increasedStressLevel = applyOperation(stressLevel, monkeyInput.operation)
-      val divided = (increasedStressLevel.toFloat / 3).floor.round
+      val divided = increasedStressLevel % reducer
       if (divided % monkeyInput.test == 0) MonkeyMove(divided, monkeyInput.number, monkeyInput.trueMonkey)
       else MonkeyMove(divided, monkeyInput.number, monkeyInput.falseMonkey)
     )
@@ -68,12 +68,12 @@ object Day_11:
         )
       case e => throw new Error(s"invalid input: $e")
 
-  def inspectItems(monkeys: List[MonkeyInput]): List[MonkeyInput] =
+  def inspectItems(monkeys: List[MonkeyInput], reducer: Int): List[MonkeyInput] =
     monkeys
       .map(_.number)
       .foldLeft(monkeys)((currentMonkeys, number) =>
         val monkeyInput = currentMonkeys(number)
-        val moves = parseMonkeyItem(monkeyInput)
+        val moves = parseMonkeyItem(monkeyInput, reducer)
         val afterThrowing = throwItem(currentMonkeys, moves)
         val newMonkeyInput = afterThrowing(monkeyInput.number)
         val updated = newMonkeyInput.copy(inspectedNo = monkeyInput.inspectedNo + monkeyInput.items.size)
@@ -91,32 +91,25 @@ object Day_11:
   }
 
   def throwItemsForXRounds(monkeyInputs: List[MonkeyInput], rounds: Int) =
-    (1 to rounds).foldLeft(List(monkeyInputs))((acc, _) => inspectItems(acc.head) :: acc)
+    val reducer = monkeyInputs.map(_.test).product
+    (1 to rounds).foldLeft(List(monkeyInputs))((acc, _) => inspectItems(acc.head, reducer) :: acc)
 
   def main(args: Array[String]): Unit =
     val input = FileReader.readLines(index)
     val grouped = input.grouped(7)
     val parsed = grouped.map(parseMonkey).toList
     println(parsed)
-//    val result = inspectItems(parsed)
 
-    val after20Rounds = throwItemsForXRounds(parsed, 20)
-    after20Rounds.reverse.zipWithIndex.foreach((l, i) =>
-      println(i)
-      l.map(_.items).foreach(println)
-      println("")
+    val afterRounds = throwItemsForXRounds(parsed, 10000)
+
+    afterRounds.reverse.zipWithIndex.foreach((l, i) =>
+      if(i%1000==0)
+        println(i)
+        l.map(_.items).foreach(println)
+        println("")
     )
-    val res = after20Rounds.flatMap(_.map(monkey => (monkey.number, monkey.items)))
-    println(res)
-    val summed = res.foldLeft(Map.empty[Int, List[Int]])((acc, el) =>
-      val (number, items) = el
-      val before = acc.getOrElse(number, List.empty[Int])
-      acc.updated(number, before ++ items)
-    )
-    val counted = summed.map((k, v) => (k, v.size))
-    println(summed)
-    println(counted)
-    val actualRes = after20Rounds.head.map(m => (m.number, m.inspectedNo))
+
+    val actualRes = afterRounds.head.map(m => (m.number, m.inspectedNo))
     println(actualRes)
-    val biggest2 = actualRes.map(_._2).sorted.reverse.slice(0,2).product
+    val biggest2 = actualRes.map(_._2).sorted.reverse.slice(0,2).map(BigInt(_)).product
     println(biggest2)
