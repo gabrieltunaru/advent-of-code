@@ -12,7 +12,8 @@ object Day_11:
       operation: Operation,
       test: Int,
       trueMonkey: Int,
-      falseMonkey: Int
+      falseMonkey: Int,
+      inspectedNo: Int = 0
   )
   case class MonkeyMove(stressLevel: Int, sourceMonkey: Int, targetMonkey: Int)
 
@@ -68,11 +69,16 @@ object Day_11:
       case e => throw new Error(s"invalid input: $e")
 
   def inspectItems(monkeys: List[MonkeyInput]): List[MonkeyInput] =
-    monkeys.map(_.number).foldLeft(monkeys)((currentMonkeys, number) =>
-      val monkeyInput = currentMonkeys(number)
-      val moves = parseMonkeyItem(monkeyInput)
-      throwItem(currentMonkeys, moves)
-    )
+    monkeys
+      .map(_.number)
+      .foldLeft(monkeys)((currentMonkeys, number) =>
+        val monkeyInput = currentMonkeys(number)
+        val moves = parseMonkeyItem(monkeyInput)
+        val afterThrowing = throwItem(currentMonkeys, moves)
+        val newMonkeyInput = afterThrowing(monkeyInput.number)
+        val updated = newMonkeyInput.copy(inspectedNo = monkeyInput.inspectedNo + monkeyInput.items.size)
+        afterThrowing.updated(monkeyInput.number, updated)
+      )
 
   def throwItem(monkeys: List[MonkeyInput], moves: List[MonkeyMove]): List[MonkeyInput] = {
     moves.foldLeft(monkeys)((currentMonkeys, move) =>
@@ -85,9 +91,7 @@ object Day_11:
   }
 
   def throwItemsForXRounds(monkeyInputs: List[MonkeyInput], rounds: Int) =
-    (1 to rounds).foldLeft(List(monkeyInputs))((acc, _) =>
-      inspectItems(acc.head) :: acc
-    )
+    (1 to rounds).foldLeft(List(monkeyInputs))((acc, _) => inspectItems(acc.head) :: acc)
 
   def main(args: Array[String]): Unit =
     val input = FileReader.readLines(index)
@@ -97,7 +101,7 @@ object Day_11:
 //    val result = inspectItems(parsed)
 
     val after20Rounds = throwItemsForXRounds(parsed, 20)
-    after20Rounds.reverse.zipWithIndex.foreach((l,i) =>
+    after20Rounds.reverse.zipWithIndex.foreach((l, i) =>
       println(i)
       l.map(_.items).foreach(println)
       println("")
@@ -105,10 +109,14 @@ object Day_11:
     val res = after20Rounds.flatMap(_.map(monkey => (monkey.number, monkey.items)))
     println(res)
     val summed = res.foldLeft(Map.empty[Int, List[Int]])((acc, el) =>
-        val (number, items) = el
-        val before = acc.getOrElse(number, List.empty[Int])
-        acc.updated(number, before ++ items)
+      val (number, items) = el
+      val before = acc.getOrElse(number, List.empty[Int])
+      acc.updated(number, before ++ items)
     )
-    val counted = summed.map((k,v) => (k,v.size))
+    val counted = summed.map((k, v) => (k, v.size))
     println(summed)
     println(counted)
+    val actualRes = after20Rounds.head.map(m => (m.number, m.inspectedNo))
+    println(actualRes)
+    val biggest2 = actualRes.map(_._2).sorted.reverse.slice(0,2).product
+    println(biggest2)
