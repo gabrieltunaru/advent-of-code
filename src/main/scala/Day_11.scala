@@ -6,7 +6,14 @@ import scala.io.Source
 
 object Day_11:
   case class Operation(left: String, op: String, right: String)
-  case class MonkeyInput(number: Int, items: List[Int], operation: Operation, test: Int, trueMonkey: Int, falseMonkey: Int)
+  case class MonkeyInput(
+      number: Int,
+      items: List[Int],
+      operation: Operation,
+      test: Int,
+      trueMonkey: Int,
+      falseMonkey: Int
+  )
   case class MonkeyMove(stressLevel: Int, sourceMonkey: Int, targetMonkey: Int)
 
   val index = 11
@@ -25,9 +32,9 @@ object Day_11:
   def parseMonkeyItem(monkeyInput: MonkeyInput): List[MonkeyMove] =
     monkeyInput.items.map(stressLevel =>
       val increasedStressLevel = applyOperation(stressLevel, monkeyInput.operation)
-      val divided = (increasedStressLevel.toFloat / 3).round
-      if (divided % monkeyInput.test == 0) MonkeyMove(increasedStressLevel,monkeyInput.number, monkeyInput.trueMonkey)
-      else MonkeyMove(increasedStressLevel, monkeyInput.number, monkeyInput.trueMonkey)
+      val divided = (increasedStressLevel.toFloat / 3).floor.round
+      if (divided % monkeyInput.test == 0) MonkeyMove(divided, monkeyInput.number, monkeyInput.trueMonkey)
+      else MonkeyMove(divided, monkeyInput.number, monkeyInput.falseMonkey)
     )
 
   def parseMonkey(lines: List[String]): MonkeyInput =
@@ -61,7 +68,8 @@ object Day_11:
       case e => throw new Error(s"invalid input: $e")
 
   def inspectItems(monkeys: List[MonkeyInput]): List[MonkeyInput] =
-    monkeys.foldLeft(monkeys)((currentMonkeys, monkeyInput)=>
+    monkeys.map(_.number).foldLeft(monkeys)((currentMonkeys, number) =>
+      val monkeyInput = currentMonkeys(number)
       val moves = parseMonkeyItem(monkeyInput)
       throwItem(currentMonkeys, moves)
     )
@@ -76,9 +84,31 @@ object Day_11:
     )
   }
 
+  def throwItemsForXRounds(monkeyInputs: List[MonkeyInput], rounds: Int) =
+    (1 to rounds).foldLeft(List(monkeyInputs))((acc, _) =>
+      inspectItems(acc.head) :: acc
+    )
+
   def main(args: Array[String]): Unit =
     val input = FileReader.readLines(index)
     val grouped = input.grouped(7)
     val parsed = grouped.map(parseMonkey).toList
-    val result = inspectItems(parsed)
-    println(result)
+    println(parsed)
+//    val result = inspectItems(parsed)
+
+    val after20Rounds = throwItemsForXRounds(parsed, 20)
+    after20Rounds.reverse.zipWithIndex.foreach((l,i) =>
+      println(i)
+      l.map(_.items).foreach(println)
+      println("")
+    )
+    val res = after20Rounds.flatMap(_.map(monkey => (monkey.number, monkey.items)))
+    println(res)
+    val summed = res.foldLeft(Map.empty[Int, List[Int]])((acc, el) =>
+        val (number, items) = el
+        val before = acc.getOrElse(number, List.empty[Int])
+        acc.updated(number, before ++ items)
+    )
+    val counted = summed.map((k,v) => (k,v.size))
+    println(summed)
+    println(counted)

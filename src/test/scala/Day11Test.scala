@@ -26,4 +26,11 @@ class Day11Test extends AnyFlatSpec:
     assert(applyOperation(3, sum3) == 8)
   }
 
+  it should "correctly generate the move" in {
+    val input = MonkeyInput(0,List(79, 98),Operation("old","*","19"),23,2,3)
+    val expectedMoves = List(MonkeyMove(500,0,3), MonkeyMove(620,0,3))
+    val actual = parseMonkeyItem(input)
+    assert(actual==expectedMoves)
+  }
+
 
