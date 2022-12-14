@@ -5,7 +5,7 @@ import util.FileReader
 import scala.collection.mutable
 import scala.io.Source
 
-object Day_12:
+object Day_12_1:
   case class Point(x: Int, y: Int)
   type Something = List[List[Int]]
   case class Graph(nodes: Set[Point], edges: List[(Point, Point)]):
