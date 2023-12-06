@@ -49,20 +49,15 @@ object Day_5bf:
 
   def part2(input: Input): Long =
     val actualSeeds = input.seeds.grouped(2).toList.map {
-      //      case a :: b :: Nil => (a to a + b - 1).toList
-      case a :: b :: Nil => {
-        //        println(s"$a - $b");
-        //        println(s"----- ${a to a+b-1}");
-        val r1 = for {
-          i <- (a to a + b - 1)
-        } yield compile(input, i)
-        //        println(r1)
-        r1.min
-      }
+      case a :: b :: Nil =>
+        var min = Long.MaxValue
+        for (i <- a until a + b) {
+          val r = compile(input, i)
+          if (r < min) min = r
+        }
+        min
       case _ => throw new Error
     }
-    //    val actualInput = part1(input.copy(seeds = actualSeeds))
-
     actualSeeds.min
 
   def main(args: Array[String]): Unit =
@@ -71,4 +66,3 @@ object Day_5bf:
     println(parsed)
     println(part1(parsed))
     println(part2(parsed))
-//    println(compile(parsed, Long(82)))
