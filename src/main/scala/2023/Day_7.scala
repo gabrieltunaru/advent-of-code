@@ -20,7 +20,7 @@ object Day_7:
         case _             => throw new Error
     )
 
-  def determineRank(cards: List[Char]): Int =
+  def determineRankP1(cards: List[Char]): Int =
     val cardsSet = cards.toSet
     cardsSet.toList.map(card => cards.count(otherCard => card == otherCard)).sorted.reverse match
       case 5 :: Nil      => 7
@@ -31,15 +31,10 @@ object Day_7:
       case 2 :: _        => 2
       case _             => 1
 
-  val cardRankP2 = List('J', '2', '3', '4', '5', '6', '7', '8', '9', 'T', 'Q', 'K', 'A')
   def determineRankP2(cards: List[Char]): Int =
-
     val counted = cards.distinct.filter(_ != 'J').map(card => cards.count(otherCard => card == otherCard))
     val jCount = cards.count(c => c == 'J')
-//    val updated = counted.map(_ + jCount)
-//    val allSorted = (jCount :: updated).sorted.reverse
     val allSorted = counted.sorted.reverse
-
     allSorted match
       case _ if jCount == 5                 => 7
       case x :: Nil if (x + jCount == 5)    => 7
@@ -64,16 +59,15 @@ object Day_7:
     val updated = sorted.zipWithIndex.map((cards, i) => cards.copy(rank = i + 1))
     updated
 
-  def part1V2(input: List[Input]): Int =
-    val cardRank = List('2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A')
-    val cardsWithRank = input.map(i => CardsWithRank(i.cards, i.bidAmount, determineRank(i.cards)))
+  def compute(input: List[Input], cardRanks: List[Char], rankFunction: List[Char] => Int): Int =
+    val cardsWithRank = input.map(i => CardsWithRank(i.cards, i.bidAmount, rankFunction(i.cards)))
     val mapped = cardsWithRank
       .map(_.rank)
       .distinct
       .sorted
       .map(rank => {
         val filtered = cardsWithRank.filter(_.rank == rank)
-        val res = mapToSecondRank(filtered, cardRank)
+        val res = mapToSecondRank(filtered, cardRanks)
         res
       })
 
@@ -82,33 +76,12 @@ object Day_7:
       acc ::: updatedEl
     })
 
-    res2.foreach(c => println(s"r: ${c.cards.foldLeft("")(_ + _)} ${c.rank}, b: ${c.bidAmount}"))
-    res2.map(c => c.rank * c.bidAmount).sum
-
-  def part2(input: List[Input]): Int =
-    val cardsWithRank = input.map(i => CardsWithRank(i.cards, i.bidAmount, determineRankP2(i.cards)))
-    val mapped = cardsWithRank
-      .map(_.rank)
-      .distinct
-      .sorted
-      .map(rank => {
-        val filtered = cardsWithRank.filter(_.rank == rank)
-        val res = mapToSecondRank(filtered, cardRankP2)
-        res
-      })
-
-    val res2 = mapped.foldLeft(List.empty[CardsWithRank])((acc, el) => {
-      val updatedEl = el.map(c => c.copy(rank = c.rank + acc.size))
-      acc ::: updatedEl
-    })
-
-    res2.foreach(c => println(s"r: ${c.cards.foldLeft("")(_ + _)} ${c.rank}, b: ${c.bidAmount}"))
     res2.map(c => c.rank * c.bidAmount).sum
 
   def main(args: Array[String]): Unit =
+    val cardRankP1 = List('2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A')
+    val cardRankP2 = List('J', '2', '3', '4', '5', '6', '7', '8', '9', 'T', 'Q', 'K', 'A')
     val input = FileReader.readLines(index, 2023)
     val parsed = parse(input)
-    println(parsed.map(_.cards.foldLeft("")(_ + _)).toSet.size)
-    println(parsed)
-//    println(part1V2(parsed))
-    println(part2(parsed))
+    println(compute(parsed, cardRankP1, determineRankP1))
+    println(compute(parsed, cardRankP2, determineRankP2))
