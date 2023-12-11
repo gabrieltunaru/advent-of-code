@@ -12,16 +12,18 @@ object Day_9:
 
   @tailrec
   def getNext(l: List[Int], acc: Int): Int =
-//    println(s"l: $l")
     val nextSequence = l.sliding(2).map { case a :: b :: Nil => b - a }.toList
-//    println(s"nextSequence: $nextSequence")
-//    println(s"acc: $acc")
     if (nextSequence.forall(_ == 0)) acc + l.last
     else
-//      val nextAcc = l.zipWithIndex.map((a, b) => a + acc.lift(b).getOrElse(0))
-//      println(s"nextAcc: $nextAcc")
       getNext(nextSequence, l.last + acc)
-//    nextSequence.last
+
+  def getNextP2(l: List[Int]): Int =
+    val nextSequence = l.sliding(2).map { case a :: b :: Nil => b - a }.toList
+    if (nextSequence.forall(_ == 0)) l.head
+    else
+      val res = getNextP2(nextSequence)
+      l.head - res
+
 
   def parse(lines: List[String]): List[List[Int]] =
     lines.map(_.split(' ').map(_.toInt).toList)
@@ -31,5 +33,6 @@ object Day_9:
     val parsed = parse(input)
     println(parsed)
     val part1 = parsed.map(l => getNext(l, 0))
-//    println(getNext(parsed.tail.head, 0))
     println(part1.sum)
+    val part2 = parsed.map(l => getNextP2(l))
+    println(part2.sum)
