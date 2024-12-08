@@ -61,7 +61,7 @@ object Day_6:
         case _: FreeSpace | _: Visited =>
           map.diff(Set(guard)) + Visited(guard.x, guard.y) + Guard(xNext, yNext, guard.direction)
         //        case _: Visited   => Visited(guard.x, guard.y) :: Guard(xNext, yNext, guard.direction) :: map.diff(List(guard))
-        case _: Obstacle => map.diff(Set(guard)) + guard.rotate
+        case _: Obstacle => map.diff(Set(guard)) + guard.rotate // TODO: add VisitedNearObstacle for part2
         case _: Guard    => throw new Error("there can't be 2 guards")
       part1(nextMap, xMax, yMax)
     }
