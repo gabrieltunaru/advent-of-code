@@ -3,6 +3,7 @@ package y2024
 
 import com.cannondev.advent.util.FileReader
 
+import scala.annotation.tailrec
 import scala.io.Source
 
 object Day_9:
@@ -18,18 +19,19 @@ object Day_9:
 
   val index = 9
 
-  def expand(input: List[Int], isFreeSpace: Boolean, currentId: Int): List[Block] =
+  @tailrec
+  def expand(input: List[Int], isFreeSpace: Boolean, currentId: Int, acc: List[Block]): List[Block] =
     input match {
-      case Nil => Nil
+      case Nil => acc
       case head :: tail =>
-        if (isFreeSpace) List.fill(head)(FreeSpace) ++ expand(tail, !isFreeSpace, currentId)
-        else List.fill(head)(File(currentId)) ++ expand(tail, !isFreeSpace, currentId + 1)
+        if (isFreeSpace) expand(tail, !isFreeSpace, currentId, acc ++ List.fill(head)(FreeSpace))
+        else expand(tail, !isFreeSpace, currentId + 1, acc ++ List.fill(head)(File(currentId)))
     }
 
   def parse(lines: List[String]): List[Block] =
     val l = lines.head.toCharArray.map(c => s"$c".toInt).toList
-    println(l)
-    expand(l, false, 0)
+//    println(l)
+    expand(l, false, 0, Nil)
 
   def defrag(input: List[Block]): List[Block] = {
     val withIndex = input.zipWithIndex
@@ -57,7 +59,7 @@ object Day_9:
 
   }
 
-  def part1(input: List[Block]): Int =
+  def part1(input: List[Block]): BigInt =
     val defragged = defrag(input)
     val filtered = defragged.flatMap {
       case f: File => Some(f)
@@ -66,10 +68,10 @@ object Day_9:
 //    filtered.zipWithIndex.foreach((f, i) => println(s"$i * ${f.id}"))
 //    filtered.zipWithIndex.foreach((f, i) => print(f.id))
 //    println("")
-    filtered.zipWithIndex.map((f, i) => f.id * i).sum
+    filtered.zipWithIndex.map((f, i) => f.id * i).foldLeft(BigInt(0))(_ + _)
 
   def main(args: Array[String]): Unit =
     val input = FileReader.readLines(index, 2024)
     val parsed = parse(input)
-    println(parsed.mkString)
+//    println(parsed.mkString)
     println(part1(parsed))
