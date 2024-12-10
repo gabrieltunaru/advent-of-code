@@ -17,41 +17,21 @@ object Day_9_p2:
         case FreeSpace(length) => "." * length
   }
 
-  case class File(startId: Int, length: Int) extends Block
+  case class File(id: Int, length: Int) extends Block
 
   case class FreeSpace(length: Int) extends Block
 
   val index = 9
 
-  def expand(input: List[Int], isFreeSpace: Boolean, currentId: Int): List[Block] =
+  @tailrec
+  def expand(input: List[Int], isFreeSpace: Boolean, currentId: Int, acc: List[Block]): List[Block] =
     input match {
-      case Nil => Nil
+      case Nil => acc
       case head :: tail =>
-        if (isFreeSpace) FreeSpace(head) :: expand(tail, !isFreeSpace, currentId)
+        if (isFreeSpace) expand(tail, !isFreeSpace, currentId, FreeSpace(head) :: acc)
         else
-          File(currentId, head) :: expand(tail, !isFreeSpace, currentId + 1)
+          expand(tail, !isFreeSpace, currentId + 1, File(currentId, head) :: acc)
     }
-
-//  def defrag(input: List[Block]): List[Block] = {
-//    val withIndex = input.zipWithIndex
-//    val freeSpace = withIndex.flatMap {
-//      case b@(FreeSpace(_), _) => Some(b)
-//      case _ => None
-//    }
-//    val files = withIndex.reverse.flatMap {
-//      case b@(File(_,_), _) => Some(b)
-//      case _ => None
-//    }
-//    //    println(s"\nFreeSpace: ${freeSpace.mkString}")
-//    //    println(s"\nFiles: ${files.mkString}")
-//    val swapped: List[(Block, Int)] =
-//      files.map(f => )
-//    val remaining = withIndex.filter((_, i) => !swapped.exists((_, j) => i == j))
-//    val all = remaining ++ swapped
-//    val sorted = all.sortBy((_, i) => i)
-//    sorted.map(_._1)
-//
-//  }
 
   def defrag(input: List[Block]): List[Block] =
     val withIndex = input.zipWithIndex
@@ -98,11 +78,30 @@ object Day_9_p2:
   def parse(lines: List[String]): List[Block] =
     val l = lines.head.toCharArray.map(c => s"$c".toInt).toList
     //    println(l)
-    expand(l, false, 0)
+    expand(l, false, 0, Nil).reverse
+
+  def part1(input: List[Block]): BigInt =
+    val defragged = defrag(input)
+    val expanded = defragged.flatMap(f => List.fill(f.length)(f))
+//    expanded.zipWithIndex.foreach(x => print(x._2))
+//    println("")
+//    println(defragged.mkString)
+//    expanded.zipWithIndex.foreach(x => print(x._1))
+//    println("")
+//    expanded.zipWithIndex.foreach((f, i) => println(s"$i * ${f.id}"))
+//    expanded.zipWithIndex.map((f, i) => f.id * i).foldLeft(BigInt(0))(_ + _)
+
+    expanded.zipWithIndex
+      .map((f, i) =>
+        f match
+          case File(id, length)  => id * i
+          case FreeSpace(length) => 0
+      )
+      .foldLeft(BigInt(0))(_ + _)
 
   def main(args: Array[String]): Unit =
     val input = FileReader.readLines(index, 2024)
     val parsed = parse(input)
     println(parsed.mkString)
-    println(defrag(parsed).mkString)
-//    println(part1(parsed))
+//    println(defrag(parsed).mkString)
+    println(part1(parsed))
