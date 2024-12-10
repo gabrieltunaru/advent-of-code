@@ -15,39 +15,6 @@ object Day_4:
   def parse(lines: List[String]): List[List[Char]] =
     lines.map(_.toCharArray.toList)
 
-  def calculateFromStartingPoint(map: List[List[Char]], x: Int, y: Int, visited: List[(Int, Int)]): Int =
-    val xMax = map.length
-    val yMax = map.head.length
-    val currentChar = map(x)(y)
-    // TODO: if current char is X, reset visited!
-    // TODO: only go to next position if next char is there, else reset
-    // TODO: diagonally means only one direction, not all diagonals at the same time
-    val (nextChar, found) = nextCharMap.getOrElse(currentChar, (None, false))
-    val actualVisited = if (currentChar == 'X') List.empty else visited
-    if (found) 1
-    else
-      val nextIndexes = List((1, 0), (-1, 0), (0, 1), (0, -1), (1, -1), (-1, 1), (1, 1), (-1, -1))
-      val nextPositions =
-        nextIndexes.map((a, b) => (x + a, y + b))
-      val nextPositionsFiltered =
-        nextPositions.filter((a, b) => a >= 0 && b >= 0 && a < xMax && b < yMax && !actualVisited.contains((a, b)))
-      nextPositionsFiltered
-        .map((a, b) =>
-          if (nextChar.contains(map(a)(b))) calculateFromStartingPoint(map, a, b, (x, y) :: actualVisited)
-          else 0
-        )
-        .sum
-
-  def part1(map: List[List[Char]]): Int = {
-    val res = for {
-      i <- map.indices
-      j <- map(i).indices
-      result = if (map(i)(j) == 'X') calculateFromStartingPoint(map, i, j, List.empty) else 0
-    } yield result
-    println(res.grouped(map.head.length).foreach(println))
-    res.sum
-  }
-
   def findAllAdiacent(map: List[List[Char]], x: Int, y: Int): Int =
     val nextIndexes = List((1, 0), (-1, 0), (0, 1), (0, -1), (1, -1), (-1, 1), (1, 1), (-1, -1))
     val xMax = map.length
