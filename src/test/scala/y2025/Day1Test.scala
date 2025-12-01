@@ -7,21 +7,45 @@ import org.scalatest.funsuite.AnyFunSuite
 class Day1Test extends AnyFunSuite {
   test("should rotate correctly") {
     assert(Day_1.rotate(11, List(Rotation(Direction.Right, 8))).current == 19)
-    assert(Day_1.rotate(11, List(
-      Rotation(Direction.Right, 8),
-      Rotation(Direction.Left, 19),
+    assert(
+      Day_1
+        .rotate(
+          11,
+          List(
+            Rotation(Direction.Right, 8),
+            Rotation(Direction.Left, 19)
+          )
+        )
+        .current == 0
     )
-    ).current == 0)
-    assert(Day_1.rotate(11, List(
-      Rotation(Direction.Right, 8),
-      Rotation(Direction.Left, 19),
-      Rotation(Direction.Left, 1),
+    assert(
+      Day_1
+        .rotate(
+          11,
+          List(
+            Rotation(Direction.Right, 8),
+            Rotation(Direction.Left, 19),
+            Rotation(Direction.Left, 1)
+          )
+        )
+        .current == 99
     )
-    ).current == 99)
-    assert(Day_1.rotate(5, List(
-      Rotation(Direction.Left, 10),
-      Rotation(Direction.Right, 5),
+    assert(
+      Day_1
+        .rotate(
+          5,
+          List(
+            Rotation(Direction.Left, 10),
+            Rotation(Direction.Right, 5)
+          )
+        )
+        .current == 0
     )
-    ).current == 0)
+  }
+
+  test("should account for intermediary zeros") {
+    assert(Day_1.rotate(5, List(Rotation(Direction.Left, 101))).numberOfZeros == 1)
+    assert(Day_1.rotate(5, List(Rotation(Direction.Left, 105))).numberOfZeros == 2)
+    assert(Day_1.rotate(5, List(Rotation(Direction.Left, 5), Rotation(Direction.Right, 100))).numberOfZeros == 2)
   }
 }

@@ -26,9 +26,11 @@ object Day_1:
         if (rotated > 99) rotated - 100
         else if (rotated < 0) rotated + 100
         else rotated
+      val intermediaryZeroes = rotation.value/ 100
       val numberOfZeros = adjusted match
-        case 0 => acc.numberOfZeros + 1
-        case _ => acc.numberOfZeros
+        case 0 if rotation.value % 100 == 0 => acc.numberOfZeros + intermediaryZeroes
+        case 0 => acc.numberOfZeros + 1 + intermediaryZeroes
+        case _ => acc.numberOfZeros + intermediaryZeroes
       Counter(adjusted, numberOfZeros)
     }
   }
