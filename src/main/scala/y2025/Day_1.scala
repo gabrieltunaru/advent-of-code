@@ -13,19 +13,23 @@ object Day_1:
     case Right
   }
   case class Rotation(dir: Direction, value: Int)
+  case class Counter(current: Int, numberOfZeros: BigInt)
 
   val index = 1
 
-  def rotate(start: Int, rotations: List[Rotation]): Int = {
-    rotations.foldLeft(start) { case (acc, rotation) =>
+  def rotate(start: Int, rotations: List[Rotation]): Counter = {
+    rotations.foldLeft(Counter(start, 0)) { case (acc, rotation) =>
       val rotated = rotation.dir match
-        case Direction.Left  => acc - rotation.value
-        case Direction.Right => acc + rotation.value
+        case Direction.Left => acc.current - rotation.value
+        case Direction.Right => acc.current + rotation.value
       val adjusted =
         if (rotated > 99) rotated - 100
         else if (rotated < 0) rotated + 100
         else rotated
-      adjusted
+      val numberOfZeros = adjusted match
+        case 0 => acc.numberOfZeros + 1
+        case _ => acc.numberOfZeros
+      Counter(adjusted, numberOfZeros)
     }
   }
 
