@@ -17,20 +17,20 @@ object Day_1:
 
   val index = 1
 
+
+
   def rotate(start: Int, rotations: List[Rotation]): Counter = {
     rotations.foldLeft(Counter(start, 0)) { case (acc, rotation) =>
       val rotated = rotation.dir match
-        case Direction.Left => acc.current - rotation.value
+        case Direction.Left  => acc.current - rotation.value
         case Direction.Right => acc.current + rotation.value
       val adjusted =
-        if (rotated > 99) rotated - 100
-        else if (rotated < 0) rotated + 100
+        if (rotated > 99) rotated % 100
+        else if (rotated < 0)  (100 + rotated % 100) % 100
         else rotated
-      val intermediaryZeroes = rotation.value/ 100
       val numberOfZeros = adjusted match
-        case 0 if rotation.value % 100 == 0 => acc.numberOfZeros + intermediaryZeroes
-        case 0 => acc.numberOfZeros + 1 + intermediaryZeroes
-        case _ => acc.numberOfZeros + intermediaryZeroes
+        case 0 => acc.numberOfZeros + 1
+        case _ => acc.numberOfZeros
       Counter(adjusted, numberOfZeros)
     }
   }
@@ -45,6 +45,8 @@ object Day_1:
       Rotation(dir, value)
     })
 
+
+  // Used: 893
   def main(args: Array[String]): Unit =
     val input = FileReader.readLines(index, 2025)
     val parsed = parse(input)
