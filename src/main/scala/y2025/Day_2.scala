@@ -9,19 +9,6 @@ object Day_2:
 
   val index = 2
 
-  // 123120
-  // 123143
-  // diff: 23
-//  def findDuplications(interval: Interval): List[BigInt] = {
-//    val commonDigitsS = (interval.start.toString.toCharArray.zipAll(interval.stop.toString.toCharArray, '*', '#').map {
-//      case (a, b) if (a == b) => s"$a$b"
-//      case _ => ""
-//    }.mkString
-//  val commonDigits = BigInt(commonDigitsS)
-//    ???
-//
-//  }
-
   def isRepeating(x: BigInt): Boolean =
     val (firstHalf, secondHalf) = x.toString.splitAt(x.toString.length/2)
     firstHalf == secondHalf
