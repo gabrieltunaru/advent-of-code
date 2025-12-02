@@ -34,6 +34,21 @@ object Day_2:
     val duplicated = expanded.filter(isRepeating)
     duplicated.sum
 
+  def isRepeatingPart2(x: BigInt): Boolean =
+    val xString = x.toString
+    val xLength = xString.length
+    val repeaters = (1 to xLength/2).toList
+    val allVariantsThatRepeat = repeaters.map(i => {
+      val howManyTimesToRepeat = xLength / i
+      xString.splitAt(i)._1 * howManyTimesToRepeat
+    })
+    allVariantsThatRepeat.contains(xString)
+
+  def part2(intervals: List[Interval]): BigInt =
+    val expanded = intervals.flatMap(expandInterval)
+    val duplicated = expanded.filter(isRepeatingPart2)
+    duplicated.sum
+
   def parse(lines: String): List[Interval] =
     val intervalsString = lines.split(",")
     intervalsString.map {
@@ -45,4 +60,4 @@ object Day_2:
     val input = FileReader.readLines(index, 2025)
     val parsed = parse(input.head)
     println(parsed)
-    println(part1(parsed))
+    println(part2(parsed))
