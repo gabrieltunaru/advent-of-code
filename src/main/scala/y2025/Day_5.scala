@@ -2,6 +2,7 @@ package com.cannondev.advent
 
 import util.FileReader
 
+import scala.annotation.tailrec
 import scala.io.Source
 
 object Day_5:
@@ -30,22 +31,52 @@ object Day_5:
     if (stop >= start) stop - start + 1
     else 0
 
-  def sot(intervals : List[Interval]): List[Interval] = {
-    val sorted = intervals.sortBy(i => i.start)
-    sorted.sliding(2).
+  def mergeIntervals(a: Interval, b: Interval): Option[Interval] =
+    if(b.start<=a.stop) Some(Interval(a.start, b.stop))
+    else None
+
+  def forceMerge(a: Interval, b: Interval): Interval = {
+    val start = a.start.min(b.start)
+    val stop = a.stop.max(b.stop)
+    Interval(start,stop)
+//    List(a, b).sortBy(_.start) match {
+//      case x::y::Nil => Interval(a.start, b.stop)
+//      case _ => throw new Error("should never happen")
+//    }
   }
 
+  def sort(input : List[Interval]): List[Interval] = {
+   input match {
+     case first :: second :: tail => mergeIntervals(first, second) match {
+       case Some(value) => sort(value :: tail)
+       case None => first::sort(second::tail)
+     }
+     case rest => rest
+   }
+  }
+
+  def findFirst(input: List[Interval], remaining: List[Interval]): Option[(Interval, Interval)] =
+    remaining match {
+      case i :: tail => input.find(j => i != j && j.start <= i.stop && j.start >= i.start) match {
+        case Some(value) => Some(i,value)
+        case None => findFirst(input, tail)
+      }
+      case Nil => None
+    }
+
+  @tailrec
+  def find(input: List[Interval]): List[Interval] = {
+    findFirst(input, input) match {
+      case Some((a,b)) =>
+        val filtered = input.filterNot(i => i==a || i == b)
+        find(forceMerge(a,b) :: filtered)
+      case None => input
+    }
+  }
+
+  // 336185947296474
   def part2(intervals: List[Interval]): BigInt =
-    val total = intervals.map(i => i.stop - i.start + 1).sum
-    val edges = intervals.flatMap(i => List(i.start, i.stop))
-    val edgesSet = edges.toSet
-    val edgesCount = edgesSet.map(edge => edges.count(e => e == edge))
-    val overlaps = for {
-      i <- intervals
-      j <- intervals
-    } yield if (i != j) union(i, j) else BigInt(0)
-    val toSubtractDuplicates = overlaps.sum
-    total - toSubtractDuplicates
+    find(intervals.sortBy(_.start)).map(i => i.stop-i.start+1).sum
 
   def main(args: Array[String]): Unit =
     val input = FileReader.readString(index, 2025)
@@ -53,3 +84,4 @@ object Day_5:
 //    println(parsed)
     println(part1(parsed))
     println(part2(parsed.intervals))
+//    println(sort(parsed.intervals.sortBy(_.start)))
