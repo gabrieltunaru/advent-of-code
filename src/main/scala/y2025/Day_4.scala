@@ -54,7 +54,5 @@ object Day_4:
   def main(args: Array[String]): Unit =
     val input = FileReader.readLines(index, 2025)
     val parsed = parse(input)
-//    println(parsed)
-//    parsed.zip(countNeighbours(parsed)).foreach((p,n) => println(s"$p - $n"))
     println(part1(parsed))
     println(part2(parsed, 0))
