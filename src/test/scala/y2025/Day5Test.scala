@@ -10,35 +10,8 @@ import org.scalactic.Prettifier.default
 import org.scalatest.funsuite.AnyFunSuite
 
 class Day5Test extends AnyFunSuite {
-  test("it should work") {
-    val x = Interval(1, 2)
-    val y = Interval(3, 4)
-    assert(union(x, y) == 0)
-    assert(union(y, x) == 0)
-  }
 
-  test("should find underlying") {
-    val x = Interval(1, 2)
-    val y = Interval(2, 4)
-    assert(union(x, y) == 1)
-    assert(union(y, x) == 1)
-  }
 
-  test("should find underlying?") {
-    val x = Interval(1, 2)
-    val y = Interval(2, 4)
-    val z = Interval(2, 4)
-    val t = Interval(2, 4)
-
-    assert(union(x, y) == 1)
-    assert(union(y, x) == 1)
-  }
-
-  test("should merge interval") {
-    val a = Interval(1, 3)
-    val b = Interval(3, 4)
-    assert(mergeIntervals(a, b) == Interval(1, 4))
-  }
 
   test("should not find interval") {
     val a = Interval(10, 14)

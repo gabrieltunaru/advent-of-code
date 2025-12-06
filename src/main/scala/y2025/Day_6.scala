@@ -32,8 +32,38 @@ object Day_6:
     }
   }
 
+  def constructArray(
+      input: List[List[Char]],
+      bigAcc: List[List[BigInt]],
+      smallAcc: List[BigInt]
+  ): List[List[BigInt]] = {
+    input match {
+      case head :: tail =>
+        if (!head.exists(_.isDigit)) constructArray(tail, smallAcc :: bigAcc, Nil)
+        else constructArray(tail, bigAcc, BigInt(head.filter(_.isDigit).mkString) :: smallAcc)
+      case Nil => if (smallAcc.isEmpty) bigAcc else smallAcc :: bigAcc
+    }
+  }
+
+  def part2(lines: List[String]): BigInt =
+    val numberLines = lines.slice(0, lines.length - 1)
+    val opLine = lines.last
+
+    val transposed = numberLines.map(_.toCharArray).transpose
+//    transposed.foreach(println)
+//    println(constructArray(transposed, Nil, Nil))
+//    println(transposed.map(s => BigInt(s.filter(_.isDigit).mkString)))
+
+    val numbers = constructArray(transposed, Nil, Nil).reverse
+    val ops = opLine.split(" +").filter(_.nonEmpty).toList
+    val result = part1(numbers, ops, 0)
+//    println(numbers)
+//    println(result)
+    result
+
   def main(args: Array[String]): Unit =
     val input = FileReader.readLines(index, 2025)
     val parsed = parse(input)
     println(parsed)
     println(part1(parsed.numbers.transpose, parsed.ops, 0))
+    println(part2(input))
