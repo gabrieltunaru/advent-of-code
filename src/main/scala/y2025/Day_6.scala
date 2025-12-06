@@ -50,15 +50,10 @@ object Day_6:
     val opLine = lines.last
 
     val transposed = numberLines.map(_.toCharArray).transpose
-//    transposed.foreach(println)
-//    println(constructArray(transposed, Nil, Nil))
-//    println(transposed.map(s => BigInt(s.filter(_.isDigit).mkString)))
 
     val numbers = constructArray(transposed, Nil, Nil).reverse
     val ops = opLine.split(" +").filter(_.nonEmpty).toList
     val result = part1(numbers, ops, 0)
-//    println(numbers)
-//    println(result)
     result
 
   def main(args: Array[String]): Unit =
