@@ -31,6 +31,7 @@ object Day_5:
     Interval(start, stop)
   }
 
+  @tailrec
   def findFirst(input: List[Interval], remaining: List[Interval]): Option[(Interval, Interval)] =
     remaining match {
       case i :: tail =>
