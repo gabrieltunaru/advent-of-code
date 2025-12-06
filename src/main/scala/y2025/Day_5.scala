@@ -25,35 +25,10 @@ object Day_5:
   def part1(input: Input): BigInt =
     input.values.count(v => input.intervals.exists(i => v >= i.start && v <= i.stop))
 
-  def union(a: Interval, b: Interval): BigInt =
-    val start = a.start.max(b.start)
-    val stop = a.stop.min(b.stop)
-    if (stop >= start) stop - start + 1
-    else 0
-
-  def mergeIntervals(a: Interval, b: Interval): Option[Interval] =
-    if (b.start <= a.stop) Some(Interval(a.start, b.stop))
-    else None
-
   def forceMerge(a: Interval, b: Interval): Interval = {
     val start = a.start.min(b.start)
     val stop = a.stop.max(b.stop)
     Interval(start, stop)
-//    List(a, b).sortBy(_.start) match {
-//      case x::y::Nil => Interval(a.start, b.stop)
-//      case _ => throw new Error("should never happen")
-//    }
-  }
-
-  def sort(input: List[Interval]): List[Interval] = {
-    input match {
-      case first :: second :: tail =>
-        mergeIntervals(first, second) match {
-          case Some(value) => sort(value :: tail)
-          case None        => first :: sort(second :: tail)
-        }
-      case rest => rest
-    }
   }
 
   def findFirst(input: List[Interval], remaining: List[Interval]): Option[(Interval, Interval)] =
@@ -77,17 +52,11 @@ object Day_5:
     }
   }
 
-  // 336185947296474
-  // 388342136956631 -> too high
-  // 359526404143201
-  // 359526404143201
   def part2(intervals: List[Interval]): BigInt =
     find(intervals.sortBy(_.start)).map(i => i.stop - i.start + 1).sum
 
   def main(args: Array[String]): Unit =
     val input = FileReader.readString(index, 2025)
     val parsed = parse(input)
-//    println(parsed)
     println(part1(parsed))
     println(part2(parsed.intervals))
-//    println(sort(parsed.intervals.sortBy(_.start)))
